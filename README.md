@@ -40,3 +40,22 @@ $ npm run test:cov
 # run container
 $ docker-compose up -d
 ```
+
+# Commands
+
+```
+#gen module
+nest g module auth
+
+#gen controller
+nest g controller auth
+
+#gen service
+nest g service auth
+```
+
+## Lưu ý khi test API
+
+### Lưu ý khi test API bằng postman: phải sử dụng phiên bản Postman dc vcài đặt trên máy tính (có hỗ trợ get cookie)
+
+### không được dùng bản postman extension
