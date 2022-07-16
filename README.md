@@ -43,9 +43,9 @@ $ docker-compose up -d
 
 # Commands
 
-## gen commands
+## Gen commands
 
-```
+```bash
 #gen module
 nest g module auth
 
@@ -56,9 +56,9 @@ nest g controller auth
 nest g service auth
 ```
 
-## seeder
+## Seeder
 
-```
+```bash
 # fake ambassadors records
 npm run seed:ambassadors
 
@@ -74,8 +74,29 @@ npm run rankings
 
 ## Lưu ý khi test API
 
-### Lưu ý khi test API bằng postman: phải sử dụng phiên bản Postman dc vcài đặt trên máy tính (có hỗ trợ get cookie)
+- Sử dụng phiên bản Postman dc cài đặt trên máy tính (có hỗ trợ get cookie)
+- không được dùng bản postman extension
 
-### không được dùng bản postman extension
+## Services / Features ...
 
-## Todo
+- [x] Docker
+- [x] Mysql
+- [x] typeORM
+- [x] Redis
+- [x] MailHog
+- [x] Stripe Gateway
+- [x] Event
+- [x] Seeder
+- [x] Logging
+- [x] .....
+
+## URLs
+
+```bash
+# MailHog
+http://localhost:8025/
+
+# API
+http://localhost:3000/
+
+```
