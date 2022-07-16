@@ -43,6 +43,8 @@ $ docker-compose up -d
 
 # Commands
 
+## gen commands
+
 ```
 #gen module
 nest g module auth
@@ -52,6 +54,22 @@ nest g controller auth
 
 #gen service
 nest g service auth
+```
+
+## seeder
+
+```
+# fake ambassadors records
+npm run seed:ambassadors
+
+# fake products records
+npm run seed:products
+
+# fake orders records
+npm run seed:orders
+
+# fake rankings
+npm run rankings
 ```
 
 ## Lưu ý khi test API
