@@ -10,5 +10,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [TypeOrmModule.forFeature([Link]), SharedModule, AuthModule],
   providers: [LinkService],
   controllers: [LinkController],
+  exports: [LinkService],
 })
 export class LinkModule {}

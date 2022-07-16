@@ -6,9 +6,16 @@ import { Order } from './order.model';
 import { OrderItem } from './order-item';
 import { OrderItemService } from './order-item.service';
 import { SharedModule } from '../shared/shared.module';
+import { LinkModule } from 'src/link/link.module';
+import { ProductModule } from 'src/product/product.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem]), SharedModule],
+  imports: [
+    TypeOrmModule.forFeature([Order, OrderItem]),
+    SharedModule,
+    LinkModule,
+    ProductModule,
+  ],
   providers: [OrderService, OrderItemService],
   controllers: [OrderController],
 })
