@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   Logger,
+  NotFoundException,
   Post,
   UseGuards,
   UseInterceptors,
@@ -24,6 +25,7 @@ import { OrderService } from './order.service';
 import { InjectStripe } from 'nestjs-stripe';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -37,6 +39,7 @@ export class OrderController {
     private loggerService: LoggerService,
     @InjectStripe() private readonly stripeClient: Stripe,
     private configService: ConfigService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -50,9 +53,8 @@ export class OrderController {
   @Post('checkout/orders')
   /**
    * It creates a new order and saves it to the database
-   * @param {CreateOrderDto} body - CreateOrderDto - The body of the request will be validated against
-   * the CreateOrderDto class.
-   * @returns The order that was just created.
+   * @param {CreateOrderDto} body - CreateOrderDto - The body of the request.
+   * @returns The source object is being returned.
    */
   async create(@Body() body: CreateOrderDto) {
     /* Checking if the link exists in the database. If it does not exist, it will throw a bad request
@@ -103,6 +105,7 @@ export class OrderController {
         orderItem.admin_revenue = 0.9 * product.price * p.quantity;
 
         await queryRunner.manager.save(orderItem);
+
         line_items.push({
           name: product.title,
           description: product.description,
@@ -113,9 +116,8 @@ export class OrderController {
         });
       }
 
+      /* Creating a new checkout session. */
       let checkout_url = this.configService.get('CHECKOUT_URL');
-      console.log(checkout_url);
-
       const source = await this.stripeClient.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: line_items,
@@ -123,6 +125,7 @@ export class OrderController {
         cancel_url: `${checkout_url}/success?error`,
       });
 
+      /* Saving the transaction id to the order. */
       order.transaction_id = source['id'];
       await queryRunner.manager.save(order);
 
@@ -141,5 +144,30 @@ export class OrderController {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  @Post('checkout/orders/confirm')
+  /**
+   * It finds an order by the transaction_id, updates the order to complete, and emits an event
+   * @param {string} source - The transaction ID of the payment.
+   */
+  async confirm(@Body('source') source: string) {
+    const order = await this.orderService.findOne({
+      where: {
+        transaction_id: source,
+      },
+      relations: ['order_items', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException('order not found');
+    }
+    await this.orderService.update(order.id, { complete: true });
+
+    await this.eventEmitter.emit('order.completed', order);
+
+    return {
+      message: 'success',
+    };
   }
 }

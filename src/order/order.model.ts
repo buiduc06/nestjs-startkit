@@ -72,6 +72,10 @@ export class Order {
   @ManyToOne(() => User, (user) => user.orders, {
     createForeignKeyConstraints: false,
   })
+  @JoinColumn({
+    referencedColumnName: 'id',
+    name: 'user_id',
+  })
   user: User;
 
   @Expose()
