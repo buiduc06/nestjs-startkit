@@ -4,6 +4,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { RedisService } from './redis.service';
 import type { ClientOpts } from 'redis';
 import { LoggerService } from './logger.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -11,13 +12,17 @@ import { LoggerService } from './logger.service';
       secret: 'secret',
       signOptions: { expiresIn: '1d' },
     }),
-    CacheModule.register<ClientOpts>({
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
+    CacheModule.registerAsync<ClientOpts>({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+      }),
     }),
   ],
-  providers: [RedisService, LoggerService],
+  providers: [RedisService, LoggerService, ConfigService],
   exports: [JwtModule, CacheModule, RedisService, LoggerService],
 })
 export class SharedModule {}
