@@ -17,6 +17,8 @@ async function bootstrap() {
   const client: any = redisService.getClient();
 
   for (let i = 0; i < ambassadors.length; i++) {
+    console.log(ambassadors[i].revenue);
+
     client.zadd('rankings', ambassadors[i].revenue, ambassadors[i].name);
   }
   process.exit();
