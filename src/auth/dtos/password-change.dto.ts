@@ -8,16 +8,9 @@ import {
 } from 'class-validator';
 import { Match } from '../../shared/decorators/match.decorator';
 
-export class RegisterDto {
+export class PasswordChangeDto {
   @IsString()
-  first_name: string;
-
-  @IsString()
-  last_name: string;
-
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  current_password: string;
 
   @IsString()
   @MinLength(4)
