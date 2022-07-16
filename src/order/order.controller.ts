@@ -21,6 +21,9 @@ import { OrderItem } from './order-item';
 import { OrderItemService } from './order-item.service';
 import { Order } from './order.model';
 import { OrderService } from './order.service';
+import { InjectStripe } from 'nestjs-stripe';
+import Stripe from 'stripe';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -32,6 +35,8 @@ export class OrderController {
     private orderItemService: OrderItemService,
     private dataSource: DataSource,
     private loggerService: LoggerService,
+    @InjectStripe() private readonly stripeClient: Stripe,
+    private configService: ConfigService,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -81,6 +86,7 @@ export class OrderController {
       o.zip = body.zip;
 
       const order = await queryRunner.manager.save(o);
+      let line_items = [];
 
       /* Creating a new order item for each product in the order. */
       for (let p of body.products) {
@@ -97,7 +103,28 @@ export class OrderController {
         orderItem.admin_revenue = 0.9 * product.price * p.quantity;
 
         await queryRunner.manager.save(orderItem);
+        line_items.push({
+          name: product.title,
+          description: product.description,
+          // images: [product.image],
+          amount: 100 * product.price,
+          currency: 'usd',
+          quantity: p.quantity,
+        });
       }
+
+      let checkout_url = this.configService.get('CHECKOUT_URL');
+      console.log(checkout_url);
+
+      const source = await this.stripeClient.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: line_items,
+        success_url: `${checkout_url}/success?source={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${checkout_url}/success?error`,
+      });
+
+      order.transaction_id = source['id'];
+      await queryRunner.manager.save(order);
 
       /* It commits the transaction. */
       await queryRunner.commitTransaction();
@@ -105,7 +132,7 @@ export class OrderController {
         `a new order has just been created - id: ${order.id}`,
       );
 
-      return order;
+      return source;
     } catch (error) {
       /* If there is an error, it will rollback the transaction and throw a bad request exception. */
       await queryRunner.rollbackTransaction();
