@@ -20,9 +20,9 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { Request } from 'express';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { ProductCreateDto } from './dtos/product-create.dto';
-import { Product } from './product';
+import { Product } from './product.model';
 import { ProductService } from './product.service';
 
 @Controller()

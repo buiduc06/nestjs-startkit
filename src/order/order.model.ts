@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OrderItem } from './order-item';
-import { User } from 'src/user/user';
+import { User } from '../user/user.model';
 
 @Entity('orders')
 export class Order {

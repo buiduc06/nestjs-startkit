@@ -1,5 +1,5 @@
-import { Product } from '../product/product';
-import { User } from '../user/user';
+import { Product } from '../product/product.model';
+import { User } from '../user/user.model';
 import {
   Column,
   Entity,

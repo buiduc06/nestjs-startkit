@@ -1,7 +1,7 @@
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
-import { Product } from '../product';
+import { Product } from '../product.model';
 
 @Injectable()
 export class ProductListener {

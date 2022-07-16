@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { SharedModule } from '../shared/shared.module';
 import { UserModule } from '../user/user.module';
 import { AdminController } from './admin.controller';

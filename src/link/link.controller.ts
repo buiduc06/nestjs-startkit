@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AdminGuard } from 'src/auth/admin.guard';
-import { AmbassadorGuard } from 'src/auth/ambassador.guard';
-import { AuthService } from 'src/auth/auth.service';
-import { Order } from 'src/order/order.model';
+import { AdminGuard } from '../auth/admin.guard';
+import { AmbassadorGuard } from '../auth/ambassador.guard';
+import { AuthService } from '../auth/auth.service';
+import { Order } from '../order/order.model';
 import { Link } from './link.model';
 import { LinkService } from './link.service';
 

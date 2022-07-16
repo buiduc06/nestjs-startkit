@@ -6,9 +6,9 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AdminGuard } from 'src/auth/admin.guard';
-import { AmbassadorGuard } from 'src/auth/ambassador.guard';
-import { User } from './user';
+import { AdminGuard } from '../auth/admin.guard';
+import { AmbassadorGuard } from '../auth/ambassador.guard';
+import { User } from './user.model';
 import { UserService } from './user.service';
 
 @Controller()
