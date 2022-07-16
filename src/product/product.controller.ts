@@ -13,13 +13,16 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { Request } from 'express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ProductCreateDto } from './dtos/product-create.dto';
+import { Product } from './product';
 import { ProductService } from './product.service';
 
 @Controller()
@@ -39,6 +42,13 @@ export class ProductController {
 
   @UseGuards(AuthGuard)
   @Post('admin/products')
+  /**
+   * It creates a new product, emits an event, and returns the product
+   * @param {ProductCreateDto} body - ProductCreateDto - The body parameter is a decorator that tells
+   * Nest to get the body of the request and pass it to the method. The ProductCreateDto is a class that
+   * we'll create in the next step.
+   * @returns The product that was created.
+   */
   async create(@Body() body: ProductCreateDto) {
     const product = this.productService.save(body);
     this.eventEmitter.emit('product.created', product);
@@ -86,7 +96,6 @@ export class ProductController {
     };
   }
 
-  // option 2
   @CacheKey('products_frontend')
   @CacheTTL(30 * 60)
   @UseInterceptors(CacheInterceptor)
@@ -95,15 +104,50 @@ export class ProductController {
     return this.productService.find({});
   }
 
-  // option 1
   @Get('ambassador/products/backend')
-  async backend() {
-    let products = await this.cacheManager.get('products_backend');
+  async backend(@Req() request: Request) {
+    let products = await this.cacheManager.get<Product[]>('products_backend');
 
+    /* It checks if the products are in the cache. If they are not, it gets them from the database and
+    saves them in the cache. */
     if (!products) {
       products = await this.productService.find({});
       await this.cacheManager.set('products_backend', products, { ttl: 1800 });
     }
-    return products;
+
+    /* Filtering the products by title or description. */
+    if (request.query.s) {
+      const s = request.query.s.toString().toLowerCase();
+      products = products.filter(
+        (p) =>
+          p.title.toLowerCase().indexOf(s) >= 0 ||
+          p.description.toLowerCase().indexOf(s) >= 0,
+      );
+    }
+
+    /* Sorting the products by price. */
+    if (request.query.sort === 'asc' || request.query.sort === 'desc') {
+      products.sort((a, b) => {
+        const diff = a.price - b.price;
+        if (diff === 0) return 0;
+
+        const sign = Math.abs(diff) / diff; //-1,1
+
+        return request.query.sort === 'asc' ? sign : -sign;
+      });
+    }
+
+    /* Paginating the products. */
+    const page: number = parseInt(request.query.page as any) || 1;
+    const perPage = 9;
+    const total = products.length;
+    const data = products.slice((page - 1) * perPage, page * perPage);
+
+    return {
+      data,
+      total,
+      page,
+      last_page: Math.ceil(total / perPage),
+    };
   }
 }
