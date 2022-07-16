@@ -10,10 +10,8 @@ import {
 import { Request } from 'express';
 import { AdminGuard } from 'src/auth/admin.guard';
 import { AmbassadorGuard } from 'src/auth/ambassador.guard';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { Order } from 'src/order/order.model';
-import { Product } from 'src/product/product';
 import { Link } from './link.model';
 import { LinkService } from './link.service';
 
