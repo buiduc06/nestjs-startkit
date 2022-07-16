@@ -88,9 +88,16 @@ export class AmbassadorController {
 
     const user = await this.userService.findOne({
       where: { id: id, is_anbassador: true },
+      relations: ['orders', 'orders.order_items'],
     });
 
-    return user;
+    // remove password, orders
+    const { password, orders, ...data } = user;
+
+    return {
+      ...data,
+      revenue: user.revenue,
+    };
   }
 
   @UseGuards(AmbassadorGuard)
