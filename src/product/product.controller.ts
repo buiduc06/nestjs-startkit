@@ -16,6 +16,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ProductCreateDto } from './dtos/product-create.dto';
@@ -27,6 +28,7 @@ export class ProductController {
   constructor(
     private readonly productService: ProductService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -38,10 +40,10 @@ export class ProductController {
   @UseGuards(AuthGuard)
   @Post('admin/products')
   async create(@Body() body: ProductCreateDto) {
-    this.cacheManager.del('products_frontend');
-    this.cacheManager.del('products_backend');
+    const product = this.productService.save(body);
+    this.eventEmitter.emit('product.created', product);
 
-    return this.productService.save(body);
+    return product;
   }
 
   @UseGuards(AuthGuard)
@@ -66,8 +68,7 @@ export class ProductController {
     }
 
     await this.productService.update(id, body);
-    this.cacheManager.del('products_frontend');
-    this.cacheManager.del('products_backend');
+    this.eventEmitter.emit('product.updated', id);
 
     return {
       message: 'Update product success',
@@ -78,8 +79,7 @@ export class ProductController {
   @Delete('admin/products/:id')
   async delete(@Param('id') id: number) {
     await this.productService.delete(id);
-    this.cacheManager.del('products_frontend');
-    this.cacheManager.del('products_backend');
+    this.eventEmitter.emit('product.deleted', id);
 
     return {
       message: 'Delete success',
