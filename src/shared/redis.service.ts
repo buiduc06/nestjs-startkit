@@ -17,7 +17,7 @@ interface RedisStore extends Store {
 export class RedisService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: RedisCache) {}
 
-  async getClient(): Promise<RedisClient> {
+  getClient(): RedisClient {
     const store = this.cacheManager.store;
 
     return store.getClient();
